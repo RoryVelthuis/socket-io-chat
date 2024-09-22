@@ -28,10 +28,17 @@ io.on('connection', (socket) => {
 
   // Listen to chat messages from this client
   socket.on('chatMessage', (data) => {
+    let timestamp = new Date().toISOString(); // Generate the current timestamp
     let message = data.message;
     console.log(`Message from: [ ${socket.id} ]: ${message}`);
-    io.emit('chatMessage', { playerId: socket.id, message: message });
+    io.emit('chatMessage', { playerId: socket.id, message: message, timestamp: timestamp });
   });
+
+  // Listen to private messages from this client
+  socket.on('privateMessage', ({ to, message }) => {
+    let timestamp = new Date().toISOString(); // Generate the current timestamp
+    io.to(to).emit('privateMessage', { playerId: socket.id, message: message, timestamp: timestamp });
+});
 
   // Broadcast a global message to all clients when someone disconnects
   socket.on('disconnect', () => {

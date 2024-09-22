@@ -5,11 +5,26 @@
 
     let socket;
     let message = '';
+    let recipient = '';
 
     function sendMessage(event) {
         // Send the message to the server
         socket.emit('chatMessage', { message: message});
         message = '';
+    }
+
+    function sendDirectMessage(event) {
+        // Send the message to the server
+        socket.emit('privateMessage', { to: recipient, message: message });
+        message = '';
+    }
+
+    function handleSend(event) {
+        if(recipient === '') {
+            sendMessage(event);
+        } else {
+            sendDirectMessage(event);
+        }
     }
 
     onMount(() => {
@@ -22,9 +37,15 @@
         });
 
         // Listen for the 'chat message' event from the server
-        socket.on('chatMessage', (data) => {
-            console.log(`New message from: [ ${data.playerId} ]: ${data.message}`);
-            messages.update(messages => [...messages, { playerId: data.playerId, message: data.message } ]);
+        socket.on('chatMessage', (message) => {
+            console.log(`New message from: [ ${message.playerId} ]: ${message.message}`);
+            messages.update(messages => [...messages, { type: 'chat', playerId: message.playerId, message: message.message, timestamp: message.timestamp } ]);
+        });
+
+        // Listen for the 'private message' event from the server
+        socket.on('privateMessage', (message) => {
+            console.log(`New private message from: [ ${message.playerId} ]: ${message.message}`);
+            messages.update(messages => [...messages, { type: 'private', playerId: message.playerId, message: message.message, timestamp: message.message } ]);
         });
     });
 </script>
@@ -35,12 +56,19 @@
     <!-- Display chat messages -->
     <div class="chat-box">
         {#each $messages as msg}
-            <div>[ {msg.playerId} ]: {msg.message}</div>
+            <div>
+                {#if msg.type === 'chat'}
+                    [ {msg.playerId} ]: {msg.message}
+                {:else}
+                    [ {msg.playerId} ] (private): {msg.message}
+                {/if}
+            </div>
         {/each}
     </div>
     <!-- Chat Input -->
-    <input type="text" bind:value={message} placeholder="Enter your message" />
-    <button on:click={sendMessage}>Send</button>
+    <input class="id-input" type="text" bind:value={recipient} placeholder="Enter ID of recipient (direct message)" />
+    <input class="chat-input" type="text" bind:value={message} placeholder="Enter your message" />
+    <button on:click={handleSend}>Send</button>
 
 </div>
 
