@@ -19,30 +19,12 @@ const io = new Server(server, {
   }
 });
 
-let player = { x: 0, y: 0 };
-
+// Socket.io connection event
 io.on('connection', (socket) => {
   console.log('a user connected');
   
   socket.on('disconnect', () => {
     console.log('user disconnected');
-  });
-  
-  socket.on('move', (data) => {
-    if (data.key === 'ArrowUp') {
-        player.y += 1; // Move up
-    } 
-    if (data.key === 'ArrowDown') {
-        player.y -= 1; // Move up
-    }
-    if (data.key === 'ArrowLeft') {
-        player.x -= 1; // Move up
-    }
-    if (data.key === 'ArrowRight') {
-        player.x += 1; // Move up
-    }
-    io.emit('updatePosition', { x: player.x, y: player.y });
-    console.log('move', player);
   });
 });
 
