@@ -19,12 +19,24 @@ const io = new Server(server, {
   }
 });
 
-// Socket.io connection event
+// When a client connects
 io.on('connection', (socket) => {
-  console.log('a user connected');
-  
+  console.log(`Client connected: ${socket.id}`);
+
+  // Send a welcome message to the newly connected client
+  socket.emit('welcome', { message: 'Welcome to the game!', playerId: socket.id });
+
+  // Listen to chat messages from this client
+  socket.on('chatMessage', (data) => {
+    let message = data.message;
+    console.log(`Message from: [ ${socket.id} ]: ${message}`);
+    io.emit('chatMessage', { playerId: socket.id, message: message });
+  });
+
+  // Broadcast a global message to all clients when someone disconnects
   socket.on('disconnect', () => {
-    console.log('user disconnected');
+    console.log(`Client disconnected: ${socket.id}`);
+    io.emit('playerDisconnected', { playerId: socket.id });
   });
 });
 
