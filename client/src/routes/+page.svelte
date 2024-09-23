@@ -2,6 +2,7 @@
     import { onMount } from 'svelte';
     import { io } from 'socket.io-client';
     import { messages, currentUsers } from '$lib/store';
+    import UserList from '../components/UserList.svelte';
 
     let socket;
     let message = '';
@@ -77,128 +78,139 @@
     });
 </script>
 
-<div>
-    <input type="text" class="set-name-input" bind:value={nameInput} placeholder="Set name">
-    <button class="set-name-button" on:click={changeName}>Set Name</button>
-    <!-- Chat box -->
-    <h2>Chat</h2>
-    <!-- Display chat messages -->
-    <div class="chat-box">
-        {#each $messages as msg}
-            <div>
-                {#if msg.type === 'chat'}
-                    [ {msg.timestamp} ] [ {msg.playerId} ]: {msg.message}
-                {:else}
-                    [ {msg.timestamp} ] [ {msg.playerId} ]: (private): {msg.message}
-                {/if}
+<input type="text" class="set-name-input" bind:value={nameInput} placeholder="Set name">
+<button class="set-name-button" on:click={changeName}>Set Name</button>
+
+
+<div class="page">
+    <div class="chat-interface">
+        <!-- Chat box -->
+        <div class="title-bar">
+            <h2>Chat</h2>
+            <div class="minimize-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="white">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
             </div>
-        {/each}
+        </div>
+        <!-- Display chat messages -->
+        <div class="chat-box">
+            {#each $messages as msg}
+                <div>
+                    {#if msg.type === 'chat'}
+                        [ {msg.timestamp} ] [ {msg.playerId} ]: {msg.message}
+                    {:else}
+                        [ {msg.timestamp} ] [ {msg.playerId} ]: (private): {msg.message}
+                    {/if}
+                </div>
+            {/each}
+        </div>
+        <!-- Chat Input -->
+        <!-- <input class="id-input" type="text" bind:value={recipient} placeholder="Enter ID of recipient (direct message)" /> -->
+        <div class="input-wrapper">
+            <input class="chat-input" type="text" bind:value={message} placeholder="Enter your message" />
+            <button on:click={handleSend}>Send</button>
+        </div>
+        <!-- <UserList /> -->
     </div>
-    <!-- Chat Input -->
-    <input class="id-input" type="text" bind:value={recipient} placeholder="Enter ID of recipient (direct message)" />
-    <input class="chat-input" type="text" bind:value={message} placeholder="Enter your message" />
-    <button on:click={handleSend}>Send</button>
-
-    <h2>Current Users</h2>
-    <ul class="current-user-list">
-        <li class="current-user-header">
-            <div class="user-id-header">ID</div>
-            <div class="user-name-header">Name</div>
-        </li>
-        {#each $currentUsers as user}
-            <li class="current-user">
-                <div class="user-id">[ {user.id} ]</div>
-                <div class="user-name">{user.name}</div>
-            </li>
-        {/each}
-    </ul>
-
 </div>
 
+
 <style>
-    /* User List */
-    .current-user-list {
-        list-style-type: none;
-        border: 1px solid #ccc;
-        height: 200px;
-        overflow-y: scroll;
-        width: fit-content;
+
+    .page {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
 
-    .current-user-header {
-        font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    .title-bar{
         display: flex;
         flex-direction: row;
-        padding: 5px 0px;
-        background-color: #f0f0f0;
-        font-weight: bold;
-        border-bottom: 1px solid #ccc;
-        cursor: default;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0px;
+        background-color: rgba(0, 0, 0, 0.7);
+        margin: 0;
+        border-top: 1px solid #a8a8a8d5;
+        height: 35px;;
     }
 
-    .current-user{
-        width: 100%;
-        display: flex;
-        flex-direction: row;
-    }
-    .current-user:hover {
-        background-color: #ebebeb;
-    }
+    h2 {
+        font-size: 1.15rem;
+        margin: 0;
+        padding: 2px 5px;
+        color: white;
+        user-select: none; /* Disable text selection highlighting */
 
-    .user-id-header {
-        font-family: 'Courier New', Courier, monospace; /* Use a monospaced font */
-        min-width: 26ch; /* Fixed width to fit up to 16 characters */
-        padding: 0px 10px 0px 5px;
-        font-weight: bold;
-        color: #000000;
-        border-right: 1px solid #ccc;
     }
-    .user-id {
-        font-family: 'Courier New', Courier, monospace; /* Use a monospaced font */
-        min-width: 26ch; /* Fixed width to fit up to 16 characters */
-        padding: 0px 10px 0px 5px;
-        font-weight: bold;
-        color: #000000;
-        border-right: 1px solid #ccc;
+    
+    .minimize-icon {
+        padding: 5px;
+        height: 30px;
+        width: 30px;
     }
-    .user-id:hover {
-        background-color: #dfdfdf;
-    }
-
-
-    .user-name-header {
-        padding: 0px 10px;
-        min-width: 22.5ch;
-        border-right: 1px solid #ccc;
-    }
-    .user-name {
-        min-width: 24ch; /* Fixed width to fit up to 16 characters */
-        padding: 0px 10px;
-        border-right: 1px solid #ccc;
-    }
-    .user-name:hover {
-        background-color: #dfdfdf;
-        cursor: default;
+    .minimize-icon:hover {
+        background-color: rgba(179, 179, 179, 0.2)
     }
 
     /* Chat */
-    .chat-box {
-        height: 200px;
-        overflow-y: scroll;
-        border: 1px solid #ccc;
-        padding: 10px;
-        margin-bottom: 10px;
+    .chat-interface {
+
+        font-size: 0.9rem;
+        position: fixed;
+        bottom: 0;
+        border: 1px solid black;
+        background-color: rgba(0, 0, 0, 0.7);
+        display: flex;
+        flex-direction: column;
+        width: 40%;
+        height: 250px;
+
     }
 
-    input[type="text"] {
-        width: 60%;
+
+    .chat-box {
+        max-height: 200px;
+        height: 100%;
+        overflow-y: scroll;
+        border: 1px solid #a8a8a8d5;
         padding: 10px;
-        font-size: 18px;
-        margin-right: 10px;
+        background-color: rgba(0, 0, 0, 0.7);
+        color: white;
+
     }
+
+    .input-wrapper {
+
+        display: flex;
+        flex-direction: row;
+        padding: 0px;
+        background-color: rgba(0, 0, 0, 0.4);
+        margin: 0;
+    }
+
+    .chat-input {
+        font-size: 0.9rem;
+        width: 100%;
+        padding: 2px 5px;
+        font-size: 18px;
+        background-color: rgba(0, 0, 0, 0.7);
+        color: white;
+        border: 1px solid #a8a8a8d5;
+
+    }
+
+    .chat-input::placeholder, .set-name-input::placeholder {
+        color: rgba(255, 255, 255, 0.411);
+    }
+
 
     button {
         padding: 10px 20px;
         font-size: 16px;
+        background-color: rgba(31, 31, 31, 0.7);
+        color: white;
+    }
+    button:hover {
+        background-color: rgba(31, 31, 31, 0.9);
     }
 </style>
