@@ -1,7 +1,7 @@
 
-# Socket-IO Multiplayer
+# Socket-IO-Chat
 
-This project includes a Svelte frontend and a Node/Express backend that communicate using Socket.IO.
+This project includes a Svelte frontend and a Node/Express backend that communicate using Socket.IO. Users can send global messages through a chat system.
 
 ## Project Structure
 
